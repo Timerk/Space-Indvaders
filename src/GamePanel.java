@@ -10,11 +10,14 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
     int rows;
     int boardHeight, boardWidth;
     int shipVelocity;
+    int alienVelocity;
+    int bulletVelocity;
 
     Image alienCyanImg,alienMagentaImg,alienYellowImg,alienWhiteImg;
     Image shipImg;
     ArrayList<Image> alienImgList = new ArrayList<>();
     ArrayList<AlienBlock> aliens = new ArrayList<>();
+    ArrayList<BulletBlock> bullets = new ArrayList<>();
 
     Block shipBlock;
     AlienBlock alienBlock;
@@ -27,6 +30,8 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
         this.boardHeight = tileSize * rows;
         this.boardWidth = tileSize * colums;
         this.shipVelocity = shipVelocity;
+        this.alienVelocity = tileSize/10;
+        this.bulletVelocity = tileSize/10;
 
         this.shipImg = new ImageIcon(getClass().getResource("images/ship.png")).getImage();
         this.alienCyanImg = new ImageIcon(getClass().getResource("images/alien-cyan.png")).getImage();
@@ -59,17 +64,28 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 
     public void draw(Graphics g){
         g.drawImage(shipBlock.img, shipBlock.x, shipBlock.y, shipBlock.width, shipBlock.height, null);
+
         for (AlienBlock alien : aliens) {
             if (alien.alive) {
                 g.drawImage(alien.img, alien.x, alien.y, alien.width, alien.height, null);
-                alien.x += tileSize/7;
+            }
+        }
+
+        g.setColor(Color.white);
+        for (BulletBlock bullet : bullets) {
+            if (!bullet.used) {
+                g.drawRect(bullet.x, bullet.y, bullet.width, bullet.height);
             }
         }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        repaint();
+        moveBullets();
+        moveAliens();
+        if (!checkGameOver()) {
+            repaint();
+        }
     }
 
     @Override
@@ -88,10 +104,12 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
                 }
                 break;
             case KeyEvent.VK_RIGHT:
-                if (shipBlock.x +shipBlock.width + shipVelocity <= boardWidth) {
+                if (shipBlock.x + shipBlock.width + shipVelocity <= boardWidth) {
                     shipBlock.x += shipVelocity; 
                 }
                 break;
+            case KeyEvent.VK_SPACE:
+                bullets.add(new BulletBlock(shipBlock.x + shipBlock.width*15/32, shipBlock.y - tileSize + tileSize/3, tileSize/10, tileSize/2, null));
             default:
         }
     }
@@ -115,5 +133,50 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
         }
     }
 
+    public void moveAliens(){
+        for (AlienBlock alien : aliens) {
+            if (alien.alive) {
+                alien.x += alienVelocity;
+                if (alien.x + alien.width >= boardWidth || alien.x <= 0) {
+                    this.alienVelocity *= -1;
+                    alien.x += alienVelocity*2;
 
+                    for (AlienBlock alienY : aliens) {
+                        alienY.y += alien.height;
+                    }
+                }
+
+            }
+        }
+    }
+
+    public boolean checkGameOver(){
+        for (AlienBlock alien : aliens) {
+            if (alien.y >= shipBlock.y + tileSize) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void moveBullets(){
+        for (BulletBlock bullet : bullets) {
+            bullet.y -= bulletVelocity;
+
+            for (AlienBlock alien : aliens) {
+                if (!bullet.used && alien.alive && checkHit(alien, bullet)) {
+                    bullet.used = true;
+                    alien.alive = false;
+                }
+            }
+        }
+    }
+
+    public boolean checkHit(AlienBlock alien, BulletBlock bullet){
+        return alien.x < bullet.x + bullet.width &&
+               alien.x + alien.width > bullet.x &&
+               alien.y < bullet.y + bullet.height &&
+               alien.y + alien.height > bullet.height;
+    }
 }
