@@ -12,12 +12,17 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
     int shipVelocity;
     int alienVelocity;
     int bulletVelocity;
+    int alienCount;
+    int score;
+    int alienAmount = 1;
+    int alienRowAmount;
 
     Image alienCyanImg,alienMagentaImg,alienYellowImg,alienWhiteImg;
     Image shipImg;
     ArrayList<Image> alienImgList = new ArrayList<>();
     ArrayList<AlienBlock> aliens = new ArrayList<>();
     ArrayList<BulletBlock> bullets = new ArrayList<>();
+    Font scoreFont = new Font("Arial", Font.BOLD, 20);
 
     Block shipBlock;
     AlienBlock alienBlock;
@@ -32,6 +37,8 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
         this.shipVelocity = shipVelocity;
         this.alienVelocity = tileSize/10;
         this.bulletVelocity = tileSize/10;
+        this.score = 0;
+        this.alienRowAmount = (tileSize*2) / colums;
 
         this.shipImg = new ImageIcon(getClass().getResource("images/ship.png")).getImage();
         this.alienCyanImg = new ImageIcon(getClass().getResource("images/alien-cyan.png")).getImage();
@@ -47,7 +54,7 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
         this.setBackground(Color.BLACK);
 
         this.shipBlock = new Block(boardWidth/2 - tileSize , boardHeight - tileSize*2, tileSize*2, tileSize, shipImg);
-        generateAliens(10);
+        generateAliens(alienAmount);
         
         addKeyListener(this);
         setFocusable(true);
@@ -65,6 +72,10 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
     public void draw(Graphics g){
         g.drawImage(shipBlock.img, shipBlock.x, shipBlock.y, shipBlock.width, shipBlock.height, null);
 
+        g.setColor(Color.white);
+        g.setFont(scoreFont);
+        g.drawString(String.valueOf(this.score), tileSize/2, tileSize);
+
         for (AlienBlock alien : aliens) {
             if (alien.alive) {
                 g.drawImage(alien.img, alien.x, alien.y, alien.width, alien.height, null);
@@ -74,7 +85,7 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
         g.setColor(Color.white);
         for (BulletBlock bullet : bullets) {
             if (!bullet.used) {
-                g.drawRect(bullet.x, bullet.y, bullet.width, bullet.height);
+                g.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
             }
         }
     }
@@ -83,6 +94,13 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
     public void actionPerformed(ActionEvent e) {
         moveBullets();
         moveAliens();
+        if (alienCount == 0) {
+            aliens.clear();
+            bullets.clear();
+            alienAmount += 2;
+            generateAliens(alienAmount);
+        }
+
         if (!checkGameOver()) {
             repaint();
         }
@@ -120,16 +138,25 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
     }
 
     public void generateAliens(int amount){
+        alienCount = amount;
         int x = 0;
         int y = tileSize;
+        int aliensAdded = 0;
+        int rows = (int) Math.ceil(amount/alienRowAmount);
         Random random = new Random();
-        for (int i = 0; i < amount; i++) {
-            aliens.add(new AlienBlock(x, y, tileSize*2, tileSize, alienImgList.get(random.nextInt(alienImgList.size()))));
-            x += tileSize*2;
-            if (i == (amount/2) - 1) {
-                x  = 0;
-                y += tileSize;
+
+        for (int i = 0; i <= rows; i++) {
+            for (int j = 0; j < alienRowAmount; j++) {
+                if (aliensAdded < amount) {
+                    aliens.add(new AlienBlock(x, y, tileSize*2, tileSize, alienImgList.get(random.nextInt(alienImgList.size()))));
+                    aliensAdded++;
+                    x += tileSize*2;
+                }else{
+                    break;
+                }
             }
+            x  = 0;
+            y += tileSize;
         }
     }
 
@@ -152,7 +179,7 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 
     public boolean checkGameOver(){
         for (AlienBlock alien : aliens) {
-            if (alien.y >= shipBlock.y + tileSize) {
+            if (alien.alive && alien.y >= shipBlock.y + tileSize) {
                 return true;
             }
         }
@@ -165,18 +192,20 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
             bullet.y -= bulletVelocity;
 
             for (AlienBlock alien : aliens) {
-                if (!bullet.used && alien.alive && checkHit(alien, bullet)) {
+                if (!bullet.used && alien.alive && checkHit(bullet, alien)) {
                     bullet.used = true;
                     alien.alive = false;
+                    score++;
+                    alienCount--;
                 }
             }
         }
     }
 
-    public boolean checkHit(AlienBlock alien, BulletBlock bullet){
-        return alien.x < bullet.x + bullet.width &&
-               alien.x + alien.width > bullet.x &&
-               alien.y < bullet.y + bullet.height &&
-               alien.y + alien.height > bullet.height;
+    public boolean checkHit(Block a, Block b){
+        return a.x < b.x + b.width &&
+               a.x + a.width > b.x &&
+               a.y < b.y + b.height &&
+               a.y + a.height > b.height;
     }
 }
