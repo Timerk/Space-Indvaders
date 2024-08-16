@@ -3,6 +3,11 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import javax.swing.*;
 import java.util.Random;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class GamePanel extends JPanel implements ActionListener,KeyListener{
     int tileSize;
@@ -16,6 +21,7 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
     int score;
     int alienAmount = 1;
     int alienRowAmount;
+    String userName;
 
     Image alienCyanImg,alienMagentaImg,alienYellowImg,alienWhiteImg;
     Image shipImg;
@@ -28,7 +34,7 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
     AlienBlock alienBlock;
 
     Timer gameLoop;
-    public GamePanel(int tileSize, int colums, int rows, int shipVelocity){
+    public GamePanel(int tileSize, int colums, int rows, int shipVelocity, String userName){
         this.tileSize = tileSize;
         this.rows = rows;
         this.colums = colums;
@@ -39,6 +45,7 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
         this.bulletVelocity = tileSize/10;
         this.score = 0;
         this.alienRowAmount = (tileSize*2) / colums;
+        this.userName = userName;
 
         this.shipImg = new ImageIcon(getClass().getResource("images/ship.png")).getImage();
         this.alienCyanImg = new ImageIcon(getClass().getResource("images/alien-cyan.png")).getImage();
@@ -180,6 +187,13 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
     public boolean checkGameOver(){
         for (AlienBlock alien : aliens) {
             if (alien.alive && alien.y >= shipBlock.y + tileSize) {
+                try {
+                    BufferedWriter writer = new BufferedWriter(new FileWriter("src/scores"));
+                   
+                    writer.write();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 return true;
             }
         }

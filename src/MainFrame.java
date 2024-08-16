@@ -7,7 +7,7 @@ public class MainFrame extends JFrame{
     int frameWidth,frameHeight;
     GamePanel gamePanel;
 
-    public MainFrame(int tileSize, int colums, int rows){
+    public MainFrame(int tileSize, int colums, int rows, String userName){
         this.tileSize = tileSize;
         this.colums = colums;
         this.rows = rows;
@@ -20,7 +20,7 @@ public class MainFrame extends JFrame{
         this.setResizable(false);
         this.setLocationRelativeTo(null);
 
-        this.gamePanel = new GamePanel(this.tileSize, this.colums, this.rows, this.tileSize);
+        this.gamePanel = new GamePanel(this.tileSize, this.colums, this.rows, this.tileSize, userName);
         this.add(gamePanel);
         this.pack();
         this.setVisible(true);
