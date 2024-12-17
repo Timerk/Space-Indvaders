@@ -113,6 +113,7 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
             bullets.clear();
             alienAmount += 2;
             generateAliens(alienAmount);
+            alienVelocity = difficulty;
         }
 
         if (!gameOver) {
@@ -180,22 +181,29 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
     }
 
     public void moveAliens(){
+        boolean hitBoundary = false;
+
         for (AlienBlock alien : aliens) {
             if (alien.alive) {
                 alien.x += alienVelocity;
                 if (alien.x + alien.width >= boardWidth || alien.x <= 0) {
-                    this.alienVelocity *= -1;
-                    alien.x += alienVelocity*2;
-
-                    for (AlienBlock alienY : aliens) {
-                        alienY.y += alien.height;
-                    }
-                }
-                if (alien.y >= shipBlock.y) {
-                    this.gameOver = true;
+                    hitBoundary = true;
                 }
             }
-        } 
+        }
+
+        if (hitBoundary) {
+            alienVelocity = -alienVelocity; 
+            for (AlienBlock alien : aliens) {
+                alien.y += alien.height;
+            }
+        }
+
+        for (AlienBlock alien : aliens) {
+            if (alien.alive && alien.y >= shipBlock.y) {
+                this.gameOver = true;
+            }
+        }
     }
 
     public void saveScore(){

@@ -6,6 +6,5 @@ public class App {
         int rows = 16;
 
         SpaceInvadersMenu menu = new SpaceInvadersMenu();
-        
     }
 }
