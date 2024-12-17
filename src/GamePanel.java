@@ -22,9 +22,12 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
     int alienAmount = 1;
     int alienRowAmount;
     String userName;
+    boolean gameOver;
 
     Image alienCyanImg,alienMagentaImg,alienYellowImg,alienWhiteImg;
     Image shipImg;
+    MainFrame mainFrame;
+    SpaceInvadersMenu menuFrame;
     ArrayList<Image> alienImgList = new ArrayList<>();
     ArrayList<AlienBlock> aliens = new ArrayList<>();
     ArrayList<BulletBlock> bullets = new ArrayList<>();
@@ -32,26 +35,31 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 
     Block shipBlock;
     AlienBlock alienBlock;
+    int difficulty;
 
     Timer gameLoop;
-    public GamePanel(int tileSize, int colums, int rows, int shipVelocity, String userName){
+    public GamePanel(int tileSize, int colums, int rows, int shipVelocity, String userName, MainFrame mainFrame, SpaceInvadersMenu menuFrame, int difficulty){
         this.tileSize = tileSize;
         this.rows = rows;
         this.colums = colums;
         this.boardHeight = tileSize * rows;
         this.boardWidth = tileSize * colums;
         this.shipVelocity = shipVelocity;
-        this.alienVelocity = tileSize/10;
-        this.bulletVelocity = tileSize/10;
+        this.difficulty = difficulty;
+        this.alienVelocity = difficulty;
+        this.bulletVelocity = 5;
         this.score = 0;
         this.alienRowAmount = (tileSize*2) / colums;
         this.userName = userName;
+        this.mainFrame = mainFrame;
+        this.menuFrame = menuFrame;
 
         this.shipImg = new ImageIcon(getClass().getResource("images/ship.png")).getImage();
         this.alienCyanImg = new ImageIcon(getClass().getResource("images/alien-cyan.png")).getImage();
         this.alienMagentaImg = new ImageIcon(getClass().getResource("images/alien-magenta.png")).getImage();
         this.alienYellowImg = new ImageIcon(getClass().getResource("images/alien-yellow.png")).getImage();
         this.alienWhiteImg = new ImageIcon(getClass().getResource("images/alien.png")).getImage();
+        this.gameOver = false;
         alienImgList.add(alienCyanImg);
         alienImgList.add(alienMagentaImg);
         alienImgList.add(alienYellowImg);
@@ -67,7 +75,6 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
         setFocusable(true);
         
         this.gameLoop = new Timer(1000/60, this);
-        this.gameLoop.start();
     }
 
     @Override
@@ -108,8 +115,13 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
             generateAliens(alienAmount);
         }
 
-        if (!checkGameOver()) {
+        if (!gameOver) {
             repaint();
+        }else{
+            gameLoop.stop();
+            saveScore();
+            mainFrame.dispose();
+            menuFrame.setVisible(true);
         }
     }
 
@@ -179,26 +191,27 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
                         alienY.y += alien.height;
                     }
                 }
-
+                if (alien.y >= shipBlock.y) {
+                    this.gameOver = true;
+                }
             }
-        }
+        } 
     }
 
-    public boolean checkGameOver(){
-        for (AlienBlock alien : aliens) {
-            if (alien.alive && alien.y >= shipBlock.y + tileSize) {
-                try {
-                    BufferedWriter writer = new BufferedWriter(new FileWriter("src/scores"));
-                   
-                    writer.write();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return true;
-            }
+    public void saveScore(){
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("src/scores/scores.txt",true));
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+            StringBuilder formatedScore = new StringBuilder(String.valueOf(this.score)).append(";");
+            formatedScore.append(this.userName).append(";");
+            formatedScore.append(currentDateTime.format(formatter));
+            writer.write(formatedScore.toString());
+            writer.newLine();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        return false;
     }
 
     public void moveBullets(){
@@ -220,6 +233,10 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
         return a.x < b.x + b.width &&
                a.x + a.width > b.x &&
                a.y < b.y + b.height &&
-               a.y + a.height > b.height;
+               a.y + a.height > b.y;
+    }
+
+    public void startGameLoop(){
+        this.gameLoop.start();
     }
 }

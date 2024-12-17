@@ -2,9 +2,24 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
 
 public class SpaceInvadersMenu extends JFrame {
     String userName;
+    MainFrame mainFrame;
+    BufferedReader scoreReader;
+    String scoresPath = "src/scores/scores.txt";
+    File scoresFile = new File(scoresPath);
+    ArrayList<Score> scores;
+    int difficulty;
 
     // Konstruktor für das Hauptmenü
     public SpaceInvadersMenu() {
@@ -14,6 +29,7 @@ public class SpaceInvadersMenu extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
+        this.difficulty = 4;
 
         // Haupt-Panel für das Menü
         JPanel panel = new JPanel();
@@ -28,14 +44,25 @@ public class SpaceInvadersMenu extends JFrame {
         panel.add(Box.createRigidArea(new Dimension(0, 50))); // Abstand
         panel.add(titleLabel);
 
+        this.userName = "guest";
+
+        if(scoresFile.exists()){
+            try {
+                this.scoreReader = new BufferedReader(new FileReader(scoresFile));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        this.scores = new ArrayList<>();
+
         // Button "Spiel starten"
         JButton startButton = new JButton("Spiel starten");
         startButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         startButton.setMaximumSize(new Dimension(200, 40));
         startButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Spiel wird gestartet...");
-                // Hier könnte man das Spiel starten
+                startGame();
             }
         });
         panel.add(Box.createRigidArea(new Dimension(0, 20))); // Abstand
@@ -47,8 +74,14 @@ public class SpaceInvadersMenu extends JFrame {
         highScoreButton.setMaximumSize(new Dimension(200, 40));
         highScoreButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Bestenliste anzeigen...");
-                // Hier könnte die Bestenliste angezeigt werden
+                try {
+                    readScores();
+                    ScoresFrame scoresFrame = new ScoresFrame(scores);
+                } catch (NumberFormatException e1) {
+                    e1.printStackTrace();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
             }
         });
         panel.add(Box.createRigidArea(new Dimension(0, 20))); // Abstand
@@ -81,6 +114,20 @@ public class SpaceInvadersMenu extends JFrame {
                         "Schwierigkeit", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
                         null, options, options[1]);
                 if (choice >= 0) {
+                    switch (choice) {
+                        case 0:
+                            setDifficulty(3);
+                            break;
+                        case 1:
+                            setDifficulty(4);
+                            break;
+                        case 2:
+                            setDifficulty(6);
+                            break;
+                        default:
+                            setDifficulty(4);
+                            break;
+                    }
                     JOptionPane.showMessageDialog(null, "Schwierigkeit auf " + options[choice] + " gesetzt.");
                 }
             }
@@ -96,6 +143,34 @@ public class SpaceInvadersMenu extends JFrame {
 
     private void setUserName(String userName){
         this.userName = userName;
+    }
+
+    public void startGame(){
+        this.mainFrame = new MainFrame(32, 16, 16, this.userName, this, this.difficulty);  
+        this.mainFrame.setVisible(true);
+        this.setVisible(false);
+        this.mainFrame.startGame();
+    }
+
+    public void readScores() throws NumberFormatException, IOException{
+        if (scoresFile.exists() && scoreReader != null) {
+            String line;
+                while ((line = scoreReader.readLine()) != null) {
+                    String[] parts = line.split(";");
+                    scores.add(new Score(Integer.parseInt(parts[0]), parts[1], parts[2])); 
+                }
+
+            Collections.sort(scores, new Comparator<Score>() {
+                @Override
+                public int compare(Score score1, Score score2) {
+                    return Integer.compare(score2.score, score1.score);
+                }
+            });
+        }
+    }
+
+    private void setDifficulty(int difficulty){
+        this.difficulty = difficulty;
     }
 }
 
