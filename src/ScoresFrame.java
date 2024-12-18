@@ -12,11 +12,11 @@ public class ScoresFrame extends JFrame{
         this.setTitle("Bestenliste");
         this.setSize(400, 400);
 
-        String[] columns = {"Punkte","Name","Datum"};
+        String[] columns = {"Punkte","Name","Datum", "Schwierigkeit"};
         DefaultTableModel tableModel = new DefaultTableModel(columns, 0);
 
         for (Score score : scores) {
-            Object[] scoreFields = {score.score, score.name, score.date}; 
+            Object[] scoreFields = {score.score, score.name, score.date, score.difficulty}; 
             tableModel.addRow(scoreFields);
         }
 

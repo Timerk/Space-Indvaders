@@ -41,7 +41,7 @@ public class SpaceInvadersMenu extends JFrame {
         titleLabel.setForeground(Color.GREEN);
         titleLabel.setFont(new Font("Monospaced", Font.BOLD, 28));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(Box.createRigidArea(new Dimension(0, 50))); // Abstand
+        panel.add(Box.createRigidArea(new Dimension(0, 50)));
         panel.add(titleLabel);
 
         this.userName = "guest";
@@ -65,7 +65,7 @@ public class SpaceInvadersMenu extends JFrame {
                 startGame();
             }
         });
-        panel.add(Box.createRigidArea(new Dimension(0, 20))); // Abstand
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
         panel.add(startButton);
 
         // Button "Bestenliste"
@@ -84,7 +84,7 @@ public class SpaceInvadersMenu extends JFrame {
                 }
             }
         });
-        panel.add(Box.createRigidArea(new Dimension(0, 20))); // Abstand
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
         panel.add(highScoreButton);
 
         // Button "Benutzername eingeben"
@@ -100,7 +100,7 @@ public class SpaceInvadersMenu extends JFrame {
                 }
             }
         });
-        panel.add(Box.createRigidArea(new Dimension(0, 20))); // Abstand
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
         panel.add(usernameButton);
 
         // Button "Schwierigkeit einstellen"
@@ -132,10 +132,9 @@ public class SpaceInvadersMenu extends JFrame {
                 }
             }
         });
-        panel.add(Box.createRigidArea(new Dimension(0, 20))); // Abstand
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
         panel.add(difficultyButton);
 
-        // Panel ins Fenster hinzufügen
         add(panel);
 
         this.setVisible(true);
@@ -157,7 +156,7 @@ public class SpaceInvadersMenu extends JFrame {
             String line;
                 while ((line = scoreReader.readLine()) != null) {
                     String[] parts = line.split(";");
-                    scores.add(new Score(Integer.parseInt(parts[0]), parts[1], parts[2])); 
+                    scores.add(new Score(Integer.parseInt(parts[0]), parts[1], parts[2], Integer.parseInt(parts[3]))); 
                 }
 
             Collections.sort(scores, new Comparator<Score>() {

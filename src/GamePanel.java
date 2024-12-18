@@ -209,11 +209,16 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
     public void saveScore(){
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter("src/scores/scores.txt",true));
+
             LocalDateTime currentDateTime = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+
             StringBuilder formatedScore = new StringBuilder(String.valueOf(this.score)).append(";");
             formatedScore.append(this.userName).append(";");
-            formatedScore.append(currentDateTime.format(formatter));
+            formatedScore.append(currentDateTime.format(formatter)).append(";");
+
+            formatedScore.append(String.valueOf(this.difficulty));
+
             writer.write(formatedScore.toString());
             writer.newLine();
             writer.close();
